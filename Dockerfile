@@ -5,9 +5,9 @@
 ARG DOTNET_VERSION=8.0
 
 FROM node:20-alpine as web-builder
-ARG JELLYFIN_WEB_VERSION=master
+ARG JELLYFIN_WEB_VERSION=custom
 RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-sdk automake libtool make gcc musl-dev nasm python3 \
- && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
+ && curl -L https://github.com/newo-2001/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && apk del curl \
  && cd jellyfin-web-* \
  && npm ci --no-audit --unsafe-perm \
