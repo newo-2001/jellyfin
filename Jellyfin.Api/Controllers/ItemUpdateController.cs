@@ -282,15 +282,32 @@ public class ItemUpdateController : BaseJellyfinApiController
 
         if (item is Series rseries)
         {
-            foreach (Season season in rseries.Children)
+            if (rseries.Children is IEnumerable<Season> seasons)
             {
-                season.OfficialRating = request.OfficialRating;
-                season.CustomRating = request.CustomRating;
-                season.Tags = season.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
-                season.OnMetadataChanged();
-                await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                foreach (Season season in seasons)
+                {
+                    season.OfficialRating = request.OfficialRating;
+                    season.CustomRating = request.CustomRating;
+                    season.Tags = season.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
+                    season.OnMetadataChanged();
+                    await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
-                foreach (Episode ep in season.Children)
+                    if (season.Children is IEnumerable<Episode> episodes)
+                    {
+                        foreach (Episode ep in episodes)
+                        {
+                            ep.OfficialRating = request.OfficialRating;
+                            ep.CustomRating = request.CustomRating;
+                            ep.Tags = ep.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
+                            ep.OnMetadataChanged();
+                            await ep.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                        }
+                    }
+                }
+            }
+            else if (rseries.Children is IEnumerable<Episode> episodes)
+            {
+                foreach (Episode ep in episodes)
                 {
                     ep.OfficialRating = request.OfficialRating;
                     ep.CustomRating = request.CustomRating;
@@ -300,9 +317,9 @@ public class ItemUpdateController : BaseJellyfinApiController
                 }
             }
         }
-        else if (item is Season season)
+        else if (item is Season season && season.Children is IEnumerable<Episode> episodes)
         {
-            foreach (Episode ep in season.Children)
+            foreach (Episode ep in episodes)
             {
                 ep.OfficialRating = request.OfficialRating;
                 ep.CustomRating = request.CustomRating;
